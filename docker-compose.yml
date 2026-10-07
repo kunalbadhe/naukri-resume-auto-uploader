@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports: ["8080:8080"]
+    env_file: .env
+    environment:
+      AUTOMATION_DRY_RUN: "true"
+      BROWSER_HEADLESS: "true"
+    volumes:
+      - ./resume:/app/resume:ro
+      - ./playwright/.auth:/app/playwright/.auth:ro
+      - ./screenshots:/app/screenshots

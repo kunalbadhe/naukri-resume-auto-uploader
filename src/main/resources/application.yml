@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8080}
+spring:
+  application:
+    name: naukri-resume-auto-uploader
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+app:
+  timezone: ${APP_TIMEZONE:Asia/Kolkata}
+  resume:
+    path: ${RESUME_PATH:resume/resume.pdf}
+  naukri:
+    base-url: ${NAUKRI_BASE_URL:https://www.naukri.com}
+  automation:
+    dry-run: ${AUTOMATION_DRY_RUN:false}
+    headless: ${BROWSER_HEADLESS:true}
+    max-retries: ${AUTOMATION_MAX_RETRIES:2}
+  security:
+    api-key: ${API_SECRET:}
+
+automation:
+  once: ${AUTOMATION_ONCE:false}

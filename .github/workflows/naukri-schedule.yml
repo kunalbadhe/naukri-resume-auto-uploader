@@ -1,0 +1,47 @@
+name: Naukri Resume Automation
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"   # 08:00 IST
+    - cron: "30 7 * * *"   # 13:00 IST
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Reconstruct private inputs
+        env:
+          RESUME_B64: ${{ secrets.RESUME_B64 }}
+          NAUKRI_AUTH_STATE_B64: ${{ secrets.NAUKRI_AUTH_STATE_B64 }}
+        run: |
+          test -n "$RESUME_B64" || { echo "RESUME_B64 secret is missing"; exit 1; }
+          test -n "$NAUKRI_AUTH_STATE_B64" || { echo "NAUKRI_AUTH_STATE_B64 secret is missing"; exit 1; }
+          mkdir -p playwright/.auth
+          printf '%s' "$RESUME_B64" | base64 --decode > resume/resume.pdf
+          printf '%s' "$NAUKRI_AUTH_STATE_B64" | base64 --decode > playwright/.auth/naukri.json
+          chmod 600 resume/resume.pdf playwright/.auth/naukri.json
+      - name: Install Chromium
+        run: mvn -q exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+      - name: Run automation
+        env:
+          NAUKRI_AUTH_STATE_PATH: playwright/.auth/naukri.json
+          RESUME_PATH: resume/resume.pdf
+          AUTOMATION_DRY_RUN: "false"
+          BROWSER_HEADLESS: "true"
+        run: mvn -B -DskipTests spring-boot:run -Dspring-boot.run.arguments="--automation.once=true"
+      - name: Cleanup private inputs
+        if: always()
+        run: rm -f resume/resume.pdf playwright/.auth/naukri.json
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automation-diagnostics
+          path: screenshots/
+          if-no-files-found: ignore

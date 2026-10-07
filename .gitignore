@@ -1,0 +1,12 @@
+.env
+*.class
+*.log
+target/
+playwright/.auth/
+storageState.json
+auth-state.json
+screenshots/
+resume/*.pdf
+!resume/PUT-YOUR-RESUME-HERE.pdf
+.idea/
+.vscode/

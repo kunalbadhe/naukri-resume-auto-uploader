@@ -1,0 +1,1 @@
+Write-Host "Run the local Playwright auth setup manually. Never commit playwright/.auth/naukri.json."
